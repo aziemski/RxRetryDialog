@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">RxRetryDialog</string>
+
+    <string name="should_fail">Should fail:\u0020</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="get_response">Get response</string>
+
+</resources>
