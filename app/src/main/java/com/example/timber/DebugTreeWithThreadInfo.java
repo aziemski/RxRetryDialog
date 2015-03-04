@@ -45,6 +45,6 @@ public class DebugTreeWithThreadInfo extends Timber.DebugTree {
   }
 
   private String addThreadInfo(String message) {
-    return "[" +Thread.currentThread().getName() +"] "+ message;
+    return "[" + Thread.currentThread().getName() + "] " + message;
   }
 }

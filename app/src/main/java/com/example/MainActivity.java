@@ -2,8 +2,8 @@ package com.example;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.widget.Button;
 
 import com.example.api.Api;
@@ -13,25 +13,24 @@ import com.example.rxretrydialog.R;
 import rx.Observable;
 import rx.Observer;
 import rx.android.AndroidSubscriptions;
+import rx.android.app.RxActivity;
+import rx.android.lifecycle.LifecycleObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.android.view.ViewObservable;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends RxActivity {
 
   private Api api;
   private SuccessOrFail successOrFail;
-
-
   private Button shouldFailBtn;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-
     successOrFail = new SuccessOrFail();
     api = new Api(successOrFail);
 
@@ -42,14 +41,17 @@ public class MainActivity extends ActionBarActivity {
     });
     updateBtnText();
 
-    ViewObservable.clicks(findViewById(R.id.getResponseBtn))
+    Observable<ApiResponse> apiObservable = ViewObservable.clicks(findViewById(R.id.getResponseBtn))
         .flatMap(click -> api.getResponse()
                      .subscribeOn(Schedulers.io())
                      .retryWhen(notification -> notification.flatMap(
-                         error -> dialog(MainActivity.this, "Error!", "Should retry?")
+                         error -> dialog(MainActivity.this, R.string.dialog_title,
+                                         R.string.dialog_msg)
                              .subscribeOn(AndroidSchedulers.mainThread())
                              .filter(answer -> answer)))
-        )
+        );
+
+    bindLifecycle(apiObservable)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Observer<ApiResponse>() {
           @Override public void onCompleted() {
@@ -66,9 +68,8 @@ public class MainActivity extends ActionBarActivity {
         });
   }
 
-
-  private Observable<Boolean> dialog(final Context context, final String title,
-                                     final String message) {
+  private Observable<Boolean> dialog(final Context context, @StringRes final int title,
+                                     @StringRes final int message) {
     return Observable.create(subscriber -> {
       Timber.d("Displaying dialog...");
       final AlertDialog ad = new AlertDialog.Builder(context)
@@ -92,9 +93,13 @@ public class MainActivity extends ActionBarActivity {
     });
   }
 
-
   private void updateBtnText() {
     shouldFailBtn.setText(getString(R.string.should_fail) + getString(
         successOrFail.shouldFail() ? R.string.yes : R.string.no));
   }
+
+  public <T> Observable<T> bindLifecycle(Observable<T> source) {
+    return LifecycleObservable.bindActivityLifecycle(lifecycle(), source);
+  }
+
 }

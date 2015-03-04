@@ -13,7 +13,9 @@ import timber.log.Timber;
 
 public class Api {
 
-  private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
+  private final SimpleDateFormat
+      sdf =
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
   private final SuccessOrFail successOrFail;
 
   public Api(SuccessOrFail successOrFail) {
@@ -35,7 +37,6 @@ public class Api {
       }
     });
   }
-
 
   private ApiResponse response() {
     boolean shouldFail = successOrFail.shouldFail();
